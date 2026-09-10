@@ -314,12 +314,12 @@ Would have made a bigger repo. Would not have made a better LLD argument for thi
 
 Known holes: signal matching can light up if you get lucky with words. The number is not a ranking. The graph is a layout of your types, not a modelling tool.
 
-## Assignment uploads
+## Assignment notes
 
 | File | What it is |
 | --- | --- |
-| [SUBMISSION.md](SUBMISSION.md) | Links + what to paste in the form |
-| [submission/research-note.pdf](submission/research-note.pdf) | Research note |
-| [submission/design-note.pdf](submission/design-note.pdf) | Design note |
-| [submission/readme-and-ai-usage.pdf](submission/readme-and-ai-usage.pdf) | README + AI usage (one upload) |
+| [SUBMISSION.md](SUBMISSION.md) | Links + how to run |
+| [RESEARCH.md](RESEARCH.md) | Research note |
+| [DESIGN.md](DESIGN.md) | Design note |
+| [AI_USAGE.md](AI_USAGE.md) | What I took from the assistant / what I refused |
 
