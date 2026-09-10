@@ -1,85 +1,87 @@
 # Design note
 
-CipherSchools — LLD practice MVP
+CipherSchools LLD practice MVP. This is how I modelled Spoke, not a second README.
 
-## What I shipped
+## What I actually shipped
 
-A local app where I pick one of five LLD problems, lock clarifying questions, work a design in a studio, walk a use case, submit, read a review, and start a revision that is linked to the last attempt — including the interviewer follow-up.
+A local (and now hosted) app. Pick one of five problems, answer the clarifying questions, fill types + relationships, walk a use case, submit, read a review, then either revise or take the follow-up. The follow-up is a new attempt linked to the old one. I do not edit history.
 
-Problems: Vending Machine, Parking Lot, Meeting Room Scheduler, In-memory Cache, Elevator. Each one has a scenario, requirements, constraints, clarifying questions that change the scored capability set, and a follow-up.
+Problems: Vending Machine, Parking Lot, Meeting Room Scheduler, In-memory Cache, Elevator. Each has a scenario, requirements, constraints, a couple of clarifying questions that can turn extra capabilities on, and a follow-up.
 
-One Next.js process. One learner. No login. The platform is modelled the way I would model a problem on the bench.
+One Next.js process. One learner. No login. I tried to model the platform the same way I would model Parking Lot on a whiteboard: a few types, clear ownership, seams where I might swap something later.
 
-## User flow
+## Flow
 
-Catalog → brief → start attempt (draft) → studio (autosave) → submit → evaluating → evaluated (or evaluation failed) → review → revise / revise for follow-up → history / compare.
+Catalog → brief → start (draft) → studio with autosave → submit → evaluating → evaluated (or evaluation_failed) → review → revise / follow-up → history / compare.
 
-The studio will not let me submit garbage. I need two named types with responsibilities, every clarifying question locked, three walkthrough beats that only name real types, at least one relationship, assumptions, and a rejected alternative. That rule lives on `validateForSubmit`.
+The studio lets you click Submit even if the form is empty. Validation is `validateForSubmit` on the design: two named types with responsibilities, every question locked, three walkthrough beats that only mention real types, at least one relationship, assumptions, rejected alternative. If that fails you get a 400 and stay in draft.
+
+I almost disabled the button. Then the rule would only exist in React. That felt wrong for an LLD assignment.
 
 ## LLD of the platform
 
-Domain types do not import Next.js or `fs`.
+`src/domain` does not import Next or `fs`.
 
-**Problem** has many **Capability** objects. A capability is an outcome, not a required class name. “Compatible spot assignment” is a capability. `ParkingSpot` is not. Some capabilities only activate when a clarification option is locked (multi-floor, card payments, a lift bank, recurring meetings).
+**Problem** has **Capability** objects. A capability is something the design should be able to do, not a required class name. “Compatible spot assignment” is a capability. `ParkingSpot` is not. Some capabilities only count if you picked a certain clarification (multi-floor, cards, a lift bank, recurring meetings).
 
-**Attempt** is the aggregate root. It owns a **Design** and, after evaluation, an **Evaluation**. Status changes live on the aggregate (`submit`, `beginEvaluation`, `complete`, `fail`, `retryEvaluation`). Illegal transitions raise `InvalidStateTransition`.
+**Attempt** is the aggregate. It owns a **Design**, and after scoring an **Evaluation**. Status changes are methods on Attempt (`submit`, `beginEvaluation`, `complete`, `fail`, `retryEvaluation`). Illegal jumps throw `InvalidStateTransition`.
 
-**Design** is the submission format: clarifications, types, relationships, walkthrough, assumptions, rejected alternative, optional notes/code.
+**Design** is what you submit: clarifications, types, relationships, walkthrough, assumptions, rejected path, optional notes/code.
 
-**Evaluation** is an immutable value object: dimensions, coverage with evidence, strengths, concerns, alternatives, interviewer questions, next-attempt focus, optional coverage delta vs parent.
+**Evaluation** is a value object. Dimensions, coverage with evidence, strengths, concerns, alternatives, interviewer questions, next-attempt focus, optional delta vs parent. Once written, we don’t patch it. Revise instead.
 
-**PracticeService** is the only use-case layer. HTTP adapters map errors to 400/404/409. They do not park cars, and they do not evaluate.
+**PracticeService** is the only use-case class. API routes map errors to 400/404/409. They don’t score anything.
 
 Ports: `ProblemRepository`, `AttemptRepository`, `Evaluator`, `LlmClient`, `Clock`, `IdGenerator`.
 
-If I add a machine-coding evaluator later, it still runs `submit → evaluate` on the same Attempt. If I add a diagram parser later, it produces a `Design` (or a `DesignEvidence` view of one). The aggregate does not change.
+If I add a code-based evaluator later, it still does submit → evaluate on the same Attempt. If I parse a diagram later, it should produce a Design. The aggregate stays.
 
-## Evaluation split
+## Evaluation
 
-**Deterministic (always).**
+**Always runs (deterministic):**
 
-- Capability coverage via signals in names, responsibilities, methods, walkthrough, and defense. Two hits = covered. `Stall` still covers assignment.
-- Structural smells: god class, vague responsibility, disconnected types, inheritance-only graphs, copy-pasted concrete clusters with no interface.
-- Walkthrough: enough beats, more than one actor, core verbs, not only self-talk.
-- Scope fidelity: if you locked “several floors,” the design has to mention floors.
-- Defense thickness: assumptions + a rejected path with a reason.
+- Coverage: look for signals in names, responsibilities, methods, walkthrough, defense. Two hits = covered. I wrote a test that `Stall` still covers assignment.
+- Structure: god class, vague responsibility, isolated types, inheritance-only, a cluster of concrete types with no interface.
+- Walkthrough: enough beats, more than one actor, a real verb, not just A talking to A.
+- Scope: if you said several floors, floors have to show up somewhere.
+- Defense: assumption + rejected path with a reason.
 
-Dimensions: scope, coverage, collaboration, cohesion, extensibility, defense. The UI leads with a **band** (fragile / developing / solid / interview-ready), not the integer. Weights live in one function.
+Dimensions: scope, coverage, collaboration, cohesion, extensibility, defense. Weights are in one function. The UI shows a band more than the integer because I don’t want people grinding 73 vs 74.
 
-**LLM (optional).** Prose only. Strengths, extra concerns, alternatives with “when it fits,” interviewer questions, next-attempt focus. Prompt is forbidden from inventing a class list. Names not in the submission are stripped. Timeout ~10s.
+**LLM, if a key is present:** prose only. Extra strengths/concerns, alternatives with “fits when”, questions, next focus. Prompt says do not invent a class list. Unknown names stripped. ~10s timeout.
 
-**Failure path (practical, not a queue).**
+**If something breaks:**
 
-| What fails | Attempt status | Learner sees |
+| What | Status | UI |
 | --- | --- | --- |
-| Missing key / timeout / junk JSON | `evaluated` (`degraded`) | Full deterministic review |
-| `Evaluator.evaluate` throws | `evaluation_failed` | Retry. Submission untouched |
-| Invalid draft | stays `draft` | Domain message, HTTP 400 |
+| No key / timeout / garbage JSON | evaluated, degraded=true | still a full checker review |
+| evaluate() throws | evaluation_failed | Retry on the same attempt |
+| Invalid design | draft | domain message |
 
-No broker. The domain already has the states a worker would need.
+No queue, no worker. The states are already there if I ever move evaluation off the request.
 
-## Trade-offs I will defend
+## Trade-offs I would defend in a viva
 
-**Structured studio vs UML canvas vs Java IDE.** I wanted comparable feedback and an LLD argument. Cost: you cannot draw freely; you cannot compile. A parser or a code adapter can sit behind the same `Evaluator` later.
+Structured studio vs a canvas vs a Java IDE: I wanted feedback I can compare across attempts. You cannot draw freely and you cannot compile. A parser can sit behind the same Evaluator later.
 
-**Capabilities vs a golden solution.** The whole point. Cost: signal matching is leaky. I show evidence. I did not hide a class list behind the heuristic.
+Capabilities vs a hidden answer key: that was the whole assignment. Signal matching is leaky. I show evidence instead of hiding `ParkingSpot` behind the heuristic.
 
-**Clarify-and-walkthrough as required.** Extra friction. Without them the product is a class dump with a score, which is how people already fail interviews.
+Making clarify + walkthrough required: annoying. Without them this is a class dump with a score, which is how people already fail the round.
 
-**Sync evaluation.** No horizontal scale. Timeout + fallback is enough. Statuses are already there if evaluation moves off-request later.
+Scoring on the request: no scale. Timeout + fallback is enough for five problems. Statuses exist if it moves later.
 
-**JSON file vs SQLite.** The port is `AttemptRepository`. A file is honest for one learner. I did not pretend I needed Postgres.
+JSON file vs sqlite: the port is `AttemptRepository`. A file is honest for one user. I did not add Postgres to look “production”.
 
-**No auth.** The demo is design, not sessions.
+No auth: this is a design demo.
 
-## What the assignment asked
+## Mapping back to the brief
 
-**What does a learner need to provide?** Enough that a reviewer can point at a type and ask “why does this know that?”, plus the scope they locked and one narrated use case. If those are missing, feedback is guessing.
+**What does the learner provide?** Enough that a reviewer can point at a type and ask why it knows that, plus the scope they locked and one narrated use case. Missing those, feedback is guessing.
 
-**Useful feedback with many valid designs?** Capabilities, seams, evidence, alternatives as conditional shapes, questions, and a follow-up. Never a required name.
+**Useful feedback when two designs are both fine?** Capabilities, seams, evidence, alternatives as “this shape fits when”, questions, follow-up. Never a required name.
 
-**Deterministic vs LLM?** Checker owns scores and structure. Model owns qualitative argument, when it is available.
+**Deterministic vs LLM?** Checker owns scores. Model owns the writeup when it is available.
 
-**Another evaluator or format later?** `Evaluator` and `AttemptRepository` ports. `Design` is the evidence object; a future code submission can extract the same shape.
+**New evaluator / format later?** `Evaluator` and `AttemptRepository`. Design is the evidence object.
 
-**If evaluation takes time or fails?** Wait on the request with a spinner. Degrade if the model is down. Fail the *evaluation*, not the submission, on a crash. Retry is one use case.
+**Slow / failed evaluation?** Spinner on the same request. Degrade if the model is down. Fail evaluation, not the submission, on a crash. Retry is one method on Attempt.

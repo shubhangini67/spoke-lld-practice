@@ -110,7 +110,7 @@ export default function ReviewPage() {
         </div>
         {evaluation.degraded ? (
           <p className="mt-3 rounded-xl bg-amber/15 p-3 text-sm">
-            Qualitative LLM review was skipped. The deterministic coverage below is complete.
+            Qualitative review from the model was skipped. Coverage below still ran.
           </p>
         ) : null}
         {evaluation.coverageDelta !== null ? (

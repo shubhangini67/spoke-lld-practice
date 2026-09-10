@@ -38,8 +38,8 @@ export default function AttemptsPage() {
         <div>
           <h1 className="display text-4xl">Attempts</h1>
           <p className="mt-2 max-w-2xl text-muted">
-            Finished attempts are frozen. Revise clones the design into a new draft so history is
-            about what moved.
+            Submitted attempts stay as they were. Revise opens a new draft so you can see what
+            changed.
           </p>
         </div>
         <Link href="/" className="btn btn-primary">

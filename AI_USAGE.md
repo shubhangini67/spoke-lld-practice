@@ -1,51 +1,57 @@
 # AI usage
 
-These are the design calls I actually made, including the ones I said no to.
+The assignment asked how I used a model and what I refused. This is that list. I did use an assistant (chat + code help) while building Spoke. The calls below are the ones that actually changed the design.
 
-## 1. What the learner has to submit
+## 1. What the learner submits
 
-A first draft kept steering toward a code editor plus hidden tests, because that is what machine-coding sites do.
+Early suggestions kept looking like a code editor plus hidden tests, because that is what machine-coding sites are.
 
-I rejected that as the primary artifact. The required thing is a **discussable design**: locked clarifying questions, types with responsibilities, relationships, a three-beat walkthrough, assumptions, and one rejected alternative. Code is optional.
+I did not make that the main artifact. You have to hand in a design someone can talk about: locked clarifying questions, types with responsibilities, relationships, a three-beat walkthrough, assumptions, one rejected alternative. Code is optional.
 
-Why: this assignment is LLD, not “make Parking Lot compile.” A walkthrough is the smallest rehearsal of the interview conversation. Tests will pass a god class.
+Reason: this brief is LLD, not “make Parking Lot compile”. A walkthrough is the smallest version of the interview conversation. Tests will pass a god class.
 
-## 2. How to score when two designs are both valid
+## 2. Scoring when two designs are both ok
 
-The easy suggestions were either a golden class list (`ParkingLot`, `ParkingSpot`, `Ticket`) or “ask an LLM for a 1–10.”
+The easy answers were a golden class list (`ParkingLot`, `ParkingSpot`, `Ticket`) or “ask an LLM for a score out of 10”.
 
-I rejected both. Problems publish **capabilities**. Some of those capabilities only turn on if the learner locked a clarification (multi-floor, a lift bank, recurring meetings). A deterministic checker looks at coverage, graph smells, walkthrough coherence, and scope fidelity. The LLM may only add qualitative review. Coverage dimensions stay `source=deterministic`.
+I rejected both. Each problem lists capabilities. Some of those only turn on if you locked a clarification (multi-floor, lift bank, recurring meetings). A checker looks at coverage, graph smells, walkthrough, scope. The model may add qualitative comments. Coverage dimensions stay marked deterministic.
 
-Why: “you didn’t name it ParkingSpot” is how courses teach imitation. Evidence is shown so I can argue with the checker.
+Reason: “you didn’t name it ParkingSpot” just trains people to copy blogs. Evidence is on the review so I can disagree with the checker.
 
-## 3. What happens if the model is slow or down
+## 3. Model slow or missing
 
-The usual suggestion was retries, circuit breakers, queues, outbox.
+Suggestions here were retries, circuit breakers, queues, outbox. That is a different assignment.
 
-I did not build any of that. About 10 seconds of HTTP timeout. Missing key, abort, or junk JSON still completes the attempt with deterministic feedback (`degraded=true`). `evaluation_failed` is only if the evaluator itself throws. Retry is one use case on the same Attempt.
+I did none of that. HTTP timeout around 10 seconds. Missing key, abort, or junk JSON still completes the attempt with the checker (`degraded=true`). `evaluation_failed` only if `evaluate()` throws. Retry is one method on the same Attempt.
 
-Why: the brief asked for a practical path, not a distributed-systems project.
+Reason: the brief asked for a practical failure path, not a distributed system.
 
-## 4. Platform shape
+## 4. How many services
 
-Splitting a problem service, an attempt service, and an evaluation service would be fake HLD for five problems.
+Splitting “problem service”, “attempt service”, “evaluation service” would have been fake HLD for five problems.
 
-One Next.js process, domain / evaluation / application / infrastructure / API folders, JSON store behind `AttemptRepository`. The seams that matter are `Evaluator` and `AttemptRepository`.
+One Next.js app. Folders for domain / evaluation / application / infrastructure / API. JSON behind `AttemptRepository`. The seams I actually care about are `Evaluator` and `AttemptRepository`.
 
-## 5. Studio
+## 5. Studio UI
 
-The first UI pass looked like every AI dashboard: sidebar, purple, “insights,” jump straight to class boxes.
+First UI sketch I got was the usual dashboard: sidebar, purple, “insights”, jump straight to class boxes.
 
-I pushed it toward a four-step rehearsal: Clarify → Structure → Walkthrough → Defend. The live graph is a by-product of the types, not a drawing tool.
+I changed it to four steps: Clarify → Structure → Walkthrough → Defend. The graph is just a view of the types, not a drawing tool.
 
-Why: if the interface looks like a chatbot wrapper, people will assume the whole product is a prompt. Clarifications and the walkthrough have to feel first-class or the research note is a lie.
+If the screen looks like a chatbot wrapper, people will assume the product is a prompt. Clarifications and the walkthrough have to be real steps or the research note is fake.
 
-## What stayed my decision
+## What I still consider my calls
 
-- Attempt is the aggregate root. Evaluations are immutable.
-- Revisions clone. They do not edit history.
-- Follow-up is a first-class next attempt, not a footnote.
-- Signal matching is leaky. I documented that. I did not hide a golden class list.
-- Scope: no Kubernetes, no contest timer, no fake auth.
+- Attempt is the aggregate. Evaluations don’t get edited in place.
+- Revise clones. History stays.
+- Follow-up is a real next attempt, not a tooltip.
+- Signal matching is leaky. I wrote that down instead of hiding an answer key.
+- No k8s, no contest clock, no fake login.
 
-I used an assistant for problem briefs, a lot of the React studio, and tests. I still rewrote the domain, the walkthrough/scope checkers, and HybridEvaluator when early versions were either too clever or too close to a golden-answer checker. These notes were rewritten so they read like a design review, not a product launch.
+## What the assistant actually touched
+
+I used it for first drafts of the five problem briefs, a lot of the React studio (forms, autosave, the sticky bar), and the Vitest files.
+
+I rewrote the domain layer, `validateForSubmit`, walkthrough/scope checks, and `HybridEvaluator` when the first versions were either too cute or too close to “did you name ParkingSpot”. Catalog examples (Parking Lot uses `Stall` on purpose) I edited by hand so the coverage test means something.
+
+If a design choice is in DESIGN.md, I can defend it without the chat log.

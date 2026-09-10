@@ -1,61 +1,59 @@
 # Research note
 
-CipherSchools — LLD practice platform
+CipherSchools LLD practice platform. Written before I locked the studio format.
 
-## How LLD practice actually fails
+## What goes wrong when I practice LLD
 
-When I sit down to practice a Parking Lot or an Elevator I can usually get boxes on a page. I cannot usually answer the only question that matters: is this any good?
+I can usually get boxes on a page for Parking Lot or Elevator. I cannot tell if they are any good.
 
-What I do next is one of three things.
+Then I do one of three things: open a GitHub repo and rename my classes to match, paste the sketch into ChatGPT and get a lecture about Strategy, or stop.
 
-I open a GitHub repo and start renaming my classes to match theirs. I dump the sketch into ChatGPT and get a lecture about Strategy. Or I stop.
-
-The learner problem is not “I don’t know what a class diagram is.” It is that there is no honest way to **submit a design, get feedback that still allows other valid designs, remember the last attempt, and face the follow-up an interviewer will actually ask**.
+The gap is not “I don’t know what a class diagram is”. It is that there is no simple way to submit a design, get feedback that still allows other valid designs, keep the last attempt, and actually face the follow-up an interviewer will ask.
 
 ## What I looked at
 
-I spent a small amount of time on tools people actually use, not LMS catalogs.
+I did not do a full market survey. I looked at the stuff people actually open.
 
-**Hello Interview’s LLD guide** is the clearest about what the round scores: problem analysis, class design, extensibility, communication. They emphasise clarifying questions first and a follow-up requirement at the end. Most practice tools skip both.
+Hello Interview’s LLD guide is the most honest about what the round scores: problem analysis, class design, extensibility, talking. They push clarifying questions first and a follow-up at the end. Almost no practice tool does both.
 
-**Grokking / Educative** teach a method and then a model solution. Useful for first exposure. Weak as a loop: feedback is “here is ours.”
+Grokking / Educative is good for a first pass. Weak as a loop because the feedback is “here is our solution”.
 
-**LLD Mastery / AlgoMaster playgrounds** are closer to an interview: clarify, diagram, code, AI feedback. They are large products. They still tend to steer you toward a canonical shape, and they do not freeze *your* attempt as history you can diff.
+LLD Mastery / AlgoMaster-style playgrounds are closer: clarify, diagram, code, AI comments. They are big products. They still steer you toward a canonical shape, and they don’t really freeze *your* attempt as something you can diff later.
 
-**Codezym and machine-coding IDEs** are LeetCode for LLD. Hidden tests, real code, company tags. Strong for implementation under time. Weak for design quality: a god class that parks cars still parks cars, and a valid design with different method names fails.
+Codezym and other machine-coding IDEs are LeetCode for LLD. Hidden tests, real code. Fine for implementation under a timer. Bad for design quality: a god class that parks cars still parks cars, and a valid design with different method names fails.
 
-**GitHub LLD dumps** (BookMyShow, Logger, Parking Lot) are useful *after* you know what you are aiming for. Harmful as the first move, because one naming becomes canon.
+GitHub dumps (BookMyShow, Logger, Parking Lot) are useful after you already know what you are trying to say. Harmful as the first move, because one naming becomes “correct”.
 
-**Unstructured ChatGPT** is fast and inconsistent. No problem-specific checklist, no history, and a habit of saying “add a Strategy” without asking whether the current type is the wrong home for that behaviour.
+Raw ChatGPT is fast and inconsistent. No problem-specific checklist, no history, and it loves “add a Strategy” without asking if that behaviour even belongs on the type you have.
 
-**Human mocks** are still the best for “can you defend this.” I cannot do that at 11pm. I want a rehearsal for that conversation, not a replacement.
+Human mocks are still the best for “can you defend this”. I cannot book one at 11pm. I wanted a rehearsal for that conversation, not a replacement.
 
-## What a meaningful attempt has to contain
+## What I think a real attempt has to contain
 
-Interviewers do not score a screenshot. They score a conversation:
+Interviewers don’t score a screenshot. They score a conversation.
 
-1. **Scope you locked.** Single floor or multi? Coins only or cards soon? If this is missing, you designed a different system than the one in the room.
-2. **Named types with responsibilities.** The smallest thing a reviewer can point at and ask “why does this know that?”
-3. **Who talks to whom.** A bag of nouns is a vocabulary list.
-4. **A walked-through use case.** “User parks a truck” across objects, in order. This is the part candidates skip and interviewers ask for.
-5. **A rejected alternative.** Senior signal. Junior candidates only show the shape they kept.
+1. Scope you actually locked. One floor or many? Coins only, or cards later? If this is missing you designed a different system than the one in the room.
+2. Named types with a one-line responsibility. Smallest thing someone can point at.
+3. Who talks to whom. A list of nouns is just vocabulary.
+4. One walked-through use case. “User parks a truck” across objects, in order. Candidates skip this. Interviewers ask for it.
+5. Something you rejected, and why. That is the senior-ish signal.
 
-Code can illustrate a seam. It should not be the unit of practice for this MVP. Tests will happily pass a mess.
+Code can show a seam. For this MVP it should not be the unit of practice. Tests will pass a mess.
 
-## What makes feedback useful when many designs are valid
+## Feedback when more than one design is valid
 
-Judge **capabilities** (behaviours the design must support) and **change-seams** (where Monday’s requirement lands). Show **evidence** so the learner can argue with the checker. Offer alternatives as “this shape fits when…”, never as *the* answer. Prefer questions the learner should be able to answer in the room. After the first review, the **follow-up** is the second half of the interview — practice that, or you practiced half a round.
+Score capabilities (what the design must support) and seams (where Monday’s requirement lands). Show evidence so I can argue with the checker. Alternatives as “this shape fits when…”, not *the* answer. After the first review the follow-up is the other half of the round. If you don’t practice that, you practiced half an interview.
 
-Do not freeze a class list. `Stall` that assigns vehicles still covers spot assignment. I wrote a test for that on purpose.
+Do not freeze a class list. A `Stall` that assigns vehicles still covers spot assignment. I put a test on that so I wouldn’t quietly regress into a golden-name checker.
 
 ## Deterministic vs LLM
 
-Coverage, graph smells, walkthrough coherence, scope fidelity, submit validation, and the attempt state machine are deterministic. They have to work offline and they have to be arguable.
+Coverage, graph smells, walkthrough, scope, submit validation, and the state machine are deterministic. They have to work with no key, and I have to be able to explain them.
 
-Qualitative defense, other valid shapes, and interviewer-style questions benefit from an LLM — on top of the checker, never instead of it. The model does not own the score. If it names a type I did not write, that gets stripped.
+Qualitative stuff (defense, other shapes, interviewer questions) is nicer with a model, on top of the checker, never instead of it. The model does not own the score. If it names a type I didn’t write, that line gets dropped.
 
-## Gaps I chose to close in two days
+## What I tried to close in two days
 
-Most tools skip clarifying questions, skip the narrated use case, skip the follow-up, and skip revision history. Spoke is small on purpose and opinionated there.
+Most tools skip clarifying questions, skip the narrated use case, skip the follow-up, skip revision history. Spoke is small and stubborn about those four.
 
-Out of scope: accounts, contest timers, a drawing canvas, hidden JUnit, a distributed evaluation bus.
+Out of scope: accounts, contest timers, a drawing canvas, hidden JUnit, a message bus for evaluation.

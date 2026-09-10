@@ -156,7 +156,8 @@ export function CatalogView({ initialProblems }: { initialProblems: ProblemListI
             <div className="panel p-5">
               <p className="text-xs font-bold uppercase tracking-widest text-mint">Tip</p>
               <p className="mt-2 text-sm text-muted">
-                New here? Open Parking Lot, then load the discussable example to see a full loop in under two minutes.
+                Start with Parking Lot. Load the example in the studio if you just want to see a full
+                submit once.
               </p>
               <Link href="/problems/parking-lot" className="btn btn-primary mt-4">
                 Try Parking Lot

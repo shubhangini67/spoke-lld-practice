@@ -1,120 +1,103 @@
-# Spoke — LLD practice studio
+# Spoke
 
-Rehearse a **low-level design interview** the way it actually runs: lock scope, name types, walk one use case out loud, defend the path you dropped, then get feedback that scores **behaviours and seams** — not whether you named it `ParkingSpot`.
+I built this for the CipherSchools LLD practice assignment. It is a small web app where you pick a problem, lock clarifying questions, put down types, walk one use case, submit, and get feedback that does **not** depend on matching some blog’s class names.
+
+Live: https://spoke-lld-practice.vercel.app  
+Repo notes for the assignment: [SUBMISSION.md](SUBMISSION.md) · [RESEARCH.md](RESEARCH.md) · [DESIGN.md](DESIGN.md) · [AI_USAGE.md](AI_USAGE.md)
+
+Quickest path through the product: **Parking Lot → Start attempt → Load example → Submit**.
 
 | | |
 | --- | --- |
-| Stack | Next.js (App Router) + TypeScript domain layer + JSON store |
+| Stack | Next.js (App Router), TypeScript, a JSON file for attempts |
 | Problems | Vending Machine, Parking Lot, Meeting Room Scheduler, In-memory Cache, Elevator |
-| Evaluation | Deterministic coverage, graph, walkthrough, and scope checks. Optional LLM on top. |
-| Auth | None. One local learner, on purpose. |
+| Scoring | Deterministic coverage / graph / walkthrough / scope. Optional LLM for prose only |
+| Auth | None |
 
-Quick demo: **Parking Lot → Start an attempt → Load a discussable example → Submit**.
-
----
+There is a day/night toggle and a Home button in the header.
 
 ## Screenshots
 
-Day and night mode live in the header (`Home` · `Problems` · `Attempts` · theme toggle). Theme is stored as `spoke-theme` in `localStorage` and follows the OS preference on first visit.
+Theme is saved in `localStorage` as `spoke-theme`. First visit follows the OS.
 
 <p align="center">
-  <img src="docs/screenshots/01-home-night.png" alt="Spoke home catalog in night mode" width="48%" />
-  <img src="docs/screenshots/02-home-day.png" alt="Spoke home catalog in day mode" width="48%" />
+  <img src="docs/screenshots/01-home-night.png" alt="Home in night mode" width="48%" />
+  <img src="docs/screenshots/02-home-day.png" alt="Home in day mode" width="48%" />
 </p>
 
-<p align="center"><em>Home / catalog — night and day. Difficulty filters, last attempt, and the practice loop.</em></p>
+Home, night and day.
 
 ![Problem brief](docs/screenshots/03-brief.png)
 
-<p align="center"><em>Brief — requirements, constraints, capabilities (not class names), interviewer follow-up.</em></p>
+Brief for Parking Lot. Capabilities are behaviours, not required class names. Follow-up is on the right.
 
 ![Design studio](docs/screenshots/04-studio.png)
 
-<p align="center"><em>Studio — Clarify → Structure → Walkthrough → Defend, live graph, always-available submit.</em></p>
+Studio steps: Clarify, Structure, Walkthrough, Defend. Graph updates from the types you named.
 
 ![Design review](docs/screenshots/05-review.png)
 
-<p align="center"><em>Review — band, dimensions with evidence, coverage, revise / follow-up.</em></p>
+Review. Band + evidence. You can revise or take the interviewer follow-up.
 
 <p align="center">
-  <img src="docs/screenshots/06-attempts.png" alt="Attempts history" width="48%" />
+  <img src="docs/screenshots/06-attempts.png" alt="Attempts list" width="48%" />
   <img src="docs/screenshots/07-compare.png" alt="Compare two attempts" width="48%" />
 </p>
 
-<p align="center"><em>History is frozen. Compare shows what moved. Revise clones; it never patches a finished attempt.</em></p>
+Finished attempts stay as they were. Compare is just “what moved”. Revise makes a new draft.
 
----
+## The loop I was aiming for
 
-## Why this exists
-
-People “practice” LLD by copying a GitHub Parking Lot or pasting boxes into a chatbot. Three things break:
-
-1. **Answer keys.** If you named `Stall` instead of `ParkingSpot`, writeups tell you that you are wrong.
-2. **Tests that pass a god class.** Machine-coding IDEs check behaviour. A 400-line `ParkingLot` still parks cars.
-3. **Skipping the interview.** Real rounds start with clarifying questions and a narrated use case. A bag of classes is not that conversation.
-
-Spoke makes the **defensible design artifact** the unit of practice. Evaluation scores **capabilities and seams**, so two valid shapes can both pass.
-
-Longer writeup: [RESEARCH.md](RESEARCH.md). Design decisions: [DESIGN.md](DESIGN.md). What I kept vs rejected from the model: [AI_USAGE.md](AI_USAGE.md).
-
----
-
-## Practice loop
+Most people “practice” LLD by copying a GitHub Parking Lot or dumping boxes into ChatGPT. That skips the actual interview: clarify, talk through a use case, defend a trade-off.
 
 ```mermaid
 flowchart LR
-  A[Choose brief] --> B[Lock clarifications]
-  B --> C[Name types + relationships]
+  A[Pick a brief] --> B[Lock clarifications]
+  B --> C[Types + relationships]
   C --> D[Walk a use case]
-  D --> E[Defend a rejected path]
+  D --> E[Rejected path]
   E --> F[Submit]
-  F --> G[Review + evidence]
-  G --> H[Revise or take the follow-up]
+  F --> G[Review]
+  G --> H[Revise / follow-up]
   H --> C
 ```
 
-1. **Catalog** — five briefs. Filter by difficulty. Last band on a problem stays visible. **Home** is always in the header.
-2. **Brief** — requirements, constraints, capabilities (behaviours, not class names), and the interviewer follow-up.
-3. **Studio** — four steps the interview actually has:
-   - Clarify (answers can activate extra capabilities, e.g. multi-floor)
-   - Structure (types + relationships + live graph)
-   - Walkthrough (actor → action → collaborator → outcome)
-   - Defend (assumptions + rejected path; code is optional)
-4. **Review** — band, evidence you can argue with, next-attempt focus, other valid shapes.
-5. **History** — finished attempts are frozen. Revise clones. Compare two attempts. “Revise for the follow-up” seeds the extension prompt into notes.
+1. Catalog of five problems. Filter easy/medium/hard. Last score stays on the card.
+2. Brief: requirements, constraints, capabilities, follow-up.
+3. Studio in four steps, because that is how the round usually goes.
+4. Review with a band (fragile / developing / solid / interview-ready) and evidence you can argue with.
+5. History. Revise clones. Follow-up revise copies the design and writes the extra prompt into notes.
 
-Submit is always clickable. Incomplete designs still hit `validateForSubmit` in the domain and come back with a concrete error. That rule is not a disabled button with no model behind it.
-
----
+Submit is always enabled. If the design is incomplete, `validateForSubmit` throws and the API returns 400. I did not want a greyed-out button that hides the real rule.
 
 ## High-level architecture
 
-One Next.js process. One `data/attempts.json` file locally (on Vercel, `/tmp/spoke` because the filesystem is ephemeral). HTTP never talks to the store or the LLM directly. **`PracticeService` is the only use-case layer.**
+One Next.js process. Locally attempts sit in `data/attempts.json`. On Vercel I write under `/tmp/spoke` because the disk is not durable. Routes do not talk to the file or to OpenAI themselves. Everything goes through `PracticeService`.
 
 ```mermaid
 flowchart TB
   subgraph Client["Browser"]
-    UI["Pages: catalog, brief, studio, review, attempts, compare"]
-    Theme["Day / night theme<br/>localStorage spoke-theme"]
+    UI["catalog, brief, studio, review, attempts, compare"]
+    Theme["day/night in localStorage"]
   end
 
-  subgraph Adapters["HTTP adapters — src/app/api"]
-    API["REST: problems, attempts,<br/>draft, submit, retry, sample"]
+  subgraph Adapters["src/app/api"]
+    API["problems, attempts, draft, submit, retry, sample"]
   end
 
-  subgraph App["Application"]
+  subgraph App["application"]
     PS["PracticeService"]
   end
 
-  subgraph Domain["Domain — no Next.js, no fs"]
-    Attempt["Attempt aggregate"]
-    Design["Design value"]
+  subgraph Domain["domain - no Next, no fs"]
+    Attempt["Attempt"]
+    Design["Design"]
     Problem["Problem + Capability"]
-    EvalVO["Evaluation value"]
-    Ports["Ports"]
+    EvalVO["Evaluation"]
+    Ports["ports"]
   end
 
-  subgraph Infra["Infrastructure"]
+  subgraph Infra["infrastructure"]
     Catalog["CatalogProblemRepository"]
     Store["JsonAttemptStore"]
     Hybrid["HybridEvaluator"]
@@ -132,32 +115,34 @@ flowchart TB
   Hybrid --> LLM
 ```
 
+Folder layout:
+
 ```
 src/
-  domain/          Attempt aggregate, Design, Problem, ports, errors
-  catalog/         Five briefs + worked examples
-  evaluation/      Deterministic engine, optional LLM, hybrid
+  domain/          Attempt, Design, Problem, ports, errors
+  catalog/         the five briefs + two worked examples
+  evaluation/      deterministic checker, optional LLM, hybrid wrapper
   application/     PracticeService
-  infrastructure/  JSON store, clock, ids, HTTP LLM client
-  app/             UI + API adapters
-  components/      Shell, theme toggle, live graph
+  infrastructure/  json store, clock, uuid, HTTP LLM client
+  app/             pages + API
+  components/      header, theme toggle, graph
 ```
 
-Ports worth swapping later, without rewriting `Attempt`:
+I put ports in so I can swap things later without rewriting Attempt:
 
-| Port | Now | Later |
+| Port | Right now | If this grew |
 | --- | --- | --- |
-| `ProblemRepository` | In-memory catalog | YAML / DB |
-| `AttemptRepository` | JSON file | SQLite / Postgres |
-| `Evaluator` | `HybridEvaluator` | Machine-coding tests, human review |
-| `LlmClient` | OpenAI-compatible HTTP | Local model, no-op |
-| `Clock` / `IdGenerator` | System clock + UUID | Frozen clock in tests |
+| ProblemRepository | in-memory list | yaml / db |
+| AttemptRepository | json file | sqlite |
+| Evaluator | HybridEvaluator | extra checkers, human review |
+| LlmClient | OpenAI-compatible HTTP | local model or nothing |
+| Clock / IdGenerator | system time + uuid | frozen in tests |
 
-### Request flow
+### What happens on submit
 
 ```mermaid
 sequenceDiagram
-  actor Learner
+  actor You
   participant Studio
   participant API
   participant PracticeService
@@ -165,34 +150,30 @@ sequenceDiagram
   participant Evaluator
   participant Store
 
-  Learner->>Studio: Start attempt
+  You->>Studio: start attempt
   Studio->>API: POST /api/attempts
   API->>PracticeService: startAttempt
-  PracticeService->>Attempt: Attempt.start draft
+  PracticeService->>Attempt: Attempt.start (draft)
   PracticeService->>Store: save
-  Learner->>Studio: Clarify / types / walk / defend
+  You->>Studio: edit design (autosave)
   Studio->>API: PUT /api/attempts/:id/draft
-  PracticeService->>Attempt: saveDraft
-  Learner->>Studio: Submit
+  You->>Studio: submit
   Studio->>API: POST /api/attempts/:id/submit
   PracticeService->>Attempt: validateForSubmit
-  Attempt->>Attempt: submit → evaluating
-  PracticeService->>Evaluator: evaluate(problem, design)
-  alt Evaluator returns
-    PracticeService->>Attempt: complete(evaluation)
-  else Evaluator throws
-    PracticeService->>Attempt: fail(reason)
+  Attempt->>Attempt: submitted then evaluating
+  PracticeService->>Evaluator: evaluate
+  alt ok
+    PracticeService->>Attempt: complete
+  else evaluator threw
+    PracticeService->>Attempt: fail
   end
   PracticeService->>Store: save
-  API-->>Studio: Attempt payload
-  Studio-->>Learner: Review (or retry)
+  Studio-->>You: review or retry
 ```
-
----
 
 ## Low-level design
 
-Domain types do not import Next.js or `fs`. The platform is modelled the same way the problems are: types with one reason to change, ports at the seams.
+I treated the platform the same way I would treat Parking Lot. Domain objects do not import Next.js or `fs`. HTTP is just an adapter.
 
 ```mermaid
 classDiagram
@@ -204,14 +185,13 @@ classDiagram
     +status
     +design
     +evaluation
-    +saveDraft(design, now)
-    +submit(now)
-    +beginEvaluation(now)
-    +complete(evaluation, now)
-    +fail(reason, now)
-    +retryEvaluation(now)
+    +saveDraft()
+    +submit()
+    +beginEvaluation()
+    +complete()
+    +fail()
+    +retryEvaluation()
   }
-
   class Design {
     +clarifications
     +types
@@ -219,73 +199,41 @@ classDiagram
     +walkthrough
     +assumptions
     +rejected
-    +notes
-    +code
   }
-
   class Problem {
-    +id
     +capabilities
     +questions
     +followUp
   }
-
   class Capability {
-    +id
     +signals
     +activatedBy
     +weight
   }
-
   class Evaluation {
     +overall
     +band
-    +dimensions
     +coverage
-    +strengths
-    +concerns
-    +alternatives
     +degraded
   }
-
   class PracticeService {
     +startAttempt()
     +saveDraft()
     +submit()
     +retryEvaluation()
-    +listAttempts()
   }
-
   class ProblemRepository {
     <<interface>>
-    +list()
-    +get(id)
   }
-
   class AttemptRepository {
     <<interface>>
-    +save()
-    +get()
-    +list()
-    +delete()
   }
-
   class Evaluator {
     <<interface>>
-    +evaluate()
   }
-
-  class HybridEvaluator {
-    +evaluate()
-  }
-
-  class DeterministicEvaluator {
-    +run()
-  }
-
-  class LlmReviewer {
-    +review()
-  }
+  class HybridEvaluator
+  class DeterministicEvaluator
+  class LlmReviewer
 
   Attempt *-- Design
   Attempt o-- Evaluation
@@ -293,48 +241,47 @@ classDiagram
   PracticeService --> ProblemRepository
   PracticeService --> AttemptRepository
   PracticeService --> Evaluator
-  PracticeService --> Attempt
   HybridEvaluator ..|> Evaluator
   HybridEvaluator --> DeterministicEvaluator
   HybridEvaluator --> LlmReviewer
 ```
 
-### Attempt state machine
+### Attempt states
 
-Finished attempts are immutable. **Revise** = new aggregate with `parentAttemptId`. Follow-up revise copies the design and prepends `Follow-up: …` into notes.
+You cannot edit a finished attempt. Revise = new Attempt with `parentAttemptId`. Follow-up does the same and prepends the interviewer prompt to notes.
 
 ```mermaid
 stateDiagram-v2
-  [*] --> draft: start / revise
-  draft --> submitted: submit after validateForSubmit
-  submitted --> evaluating: beginEvaluation
+  [*] --> draft: start or revise
+  draft --> submitted: validateForSubmit ok
+  submitted --> evaluating
   evaluating --> evaluated: complete
   evaluating --> evaluation_failed: fail
-  evaluation_failed --> evaluating: retryEvaluation
-  draft --> abandoned: abandon
-  evaluated --> [*]
-  abandoned --> [*]
+  evaluation_failed --> evaluating: retry
+  draft --> abandoned
 ```
 
-### Evaluation (LLD)
+### How scoring works
 
-**Always (deterministic).** Signal matching against capabilities so `Stall` still covers assignment. Graph smells (god class, vague responsibilities, isolated types, inheritance-only). Walkthrough coherence (real types, a core verb, not self-talk). Scope fidelity (if you locked multi-floor, floors have to show up). Defense thickness.
+The checker always runs:
 
-**Optional LLM.** Gets the problem, *your* types only, and the deterministic notes. Forbidden from inventing a correct class list. Unknown type names are stripped. If the key is missing, the call times out (~10s), or JSON is junk: the attempt still completes with `degraded=true`.
+- Capability coverage from signals in names, methods, walkthrough, etc. Two hits = covered. `Stall` still counts for assignment (there is a test).
+- Graph smells: god class, vague “manages the system” lines, leftover types, inheritance-only.
+- Walkthrough actually uses types you named, and more than one actor.
+- If you locked “several floors”, the writeup has to mention floors.
+- At least one assumption and a rejected alternative.
 
-Coverage scores are never owned by the model.
+LLM is optional and only allowed to add prose (strengths, extra concerns, “this other shape fits when…”, interviewer questions). It is not allowed to invent a correct class list. Names that are not in the submission get stripped. Missing key, timeout (~10s), or junk JSON: attempt still finishes, `degraded=true`. If `evaluate()` itself throws, status is `evaluation_failed` and you retry the same attempt.
 
-| What fails | Attempt status | Learner sees |
+| Failure | Status | What you see |
 | --- | --- | --- |
-| Incomplete design | stays `draft` | Domain message, HTTP 400 |
-| Missing key / timeout / junk JSON | `evaluated` (`degraded`) | Full deterministic review |
-| `Evaluator.evaluate` throws | `evaluation_failed` | Retry. Submission untouched |
+| Incomplete design | stays draft | message from the domain, HTTP 400 |
+| No key / timeout / bad JSON | evaluated, degraded | normal deterministic review |
+| Evaluator crash | evaluation_failed | Retry. Design is untouched |
 
-Dimensions: scope, coverage, collaboration, cohesion, extensibility, defense. The UI leads with a **band** (fragile / developing / solid / interview-ready), not the integer.
+Scores are six dimensions. The UI mostly shows the band, not the integer, because the integer is diagnostic.
 
----
-
-## Run locally
+## Run it
 
 Node 20+.
 
@@ -344,48 +291,25 @@ npm test
 npm run dev
 ```
 
-App: [http://localhost:3000](http://localhost:3000)
-
-Optional LLM:
+http://localhost:3000
 
 ```bash
 cp .env.example .env.local
-# set OPENAI_API_KEY
+# OPENAI_API_KEY=...   optional
 ```
 
-Without a key, feedback is fully usable. That is the default path.
-
-Pinned tests:
-
-- Attempt state machine and invalid submissions
-- Coverage without golden class names (`Stall` covers assignment)
-- Clarification-activated capabilities
-- God-class penalty
-- LLM throw → degraded success
-- Evaluator crash → `evaluation_failed` → retry
-- Revision copy does not mutate the parent
-- Follow-up revise seeds the interviewer prompt
-
----
+`npm test` covers the state machine, Stall-vs-ParkingSpot coverage, optional capabilities from clarifications, god class, LLM throw → degraded, crash → retry, revise copy, follow-up seed.
 
 ## Deploy
 
-The app is a standard Next.js project (`vercel.json` sets `"framework": "nextjs"`).
+`vercel.json` is just `{ "framework": "nextjs" }`. I shipped it at https://spoke-lld-practice.vercel.app.
 
-```bash
-npx vercel --prod
-```
+If you deploy your own: `npx vercel --prod`. Remember the json store on Vercel is ephemeral.
 
-Or connect the GitHub repo to Vercel and deploy on push.
+## What I did not build
 
-On Vercel the attempt store writes under `/tmp/spoke` (set automatically via `VERCEL`). History can reset when the instance recycles. For a durable store, swap `JsonAttemptStore` behind `AttemptRepository`. Optional: set `OPENAI_API_KEY` in the project env for qualitative review.
+Login, contest timer, a real UML canvas, Kubernetes, microservices, hidden JUnit.
 
----
+Would have made a bigger repo. Would not have made a better LLD argument for this assignment.
 
-## Scope I refused
-
-Accounts, timed contest mode, a full UML canvas, Kubernetes, microservices, hidden JUnit.
-
-Those would make a larger repo. They would not make a stronger LLD argument.
-
-Known limits: signal matching can false-positive on lucky vocabulary; the integer score is diagnostic, not a ranking; the graph is a layout of your types, not Enterprise Architect.
+Known holes: signal matching can light up if you get lucky with words. The number is not a ranking. The graph is a layout of your types, not a modelling tool.
